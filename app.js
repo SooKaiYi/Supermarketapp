@@ -1,0 +1,77 @@
+const express = require('express'); 
+const mysql = require('mysql2'); 
+const app = express(); 
+ 
+// Create MySQL connection 
+const connection = mysql.createConnection({ 
+    host: 'localhost', 
+    user: 'root', 
+    password: 'skibidi69', 
+    database: 'c237_supermarketapp' 
+}); 
+ 
+connection.connect((err) => { 
+    if (err) { 
+        console.error('Error connecting to MySQL:', err); 
+        return; 
+    } 
+    console.log('Connected to MySQL database'); 
+}); 
+ 
+// Set up view engine 
+app.set('view engine', 'ejs'); 
+//  enable static files 
+app.use(express.static('public'));
+// enable form processing
+app.use(express.urlencoded({ extended: false }));
+ 
+// Define routes 
+
+app.get('/', (req, res) => { 
+    const sql = 'SELECT * FROM products';
+    connection.query( sql , (error, results) => { 
+        if (error){
+            console.error('Database query error:', error.message);
+            return res.send('Error Retrieving products');
+        }
+        res.render('index', { products: results }); // Render HTML page with data 
+    }); 
+});
+
+app.get('/product/:id', (req, res) => {
+    const productId = req.params.id;
+    const sql = 'SELECT * FROM products WHERE productId = ?';
+    connection.query(sql, [productId], (error, results) => {
+        // if there is an error in executing the query
+        if (error) {
+            console.error('Database query error:', error.message);
+            return res.send('Error retrieving product');
+        }
+        // if there is no error
+        if (results.length > 0) {
+            res.render('product', { product: results[0] });
+        } else {
+            res.send('Product not found');
+        }
+    });
+});
+app.get('/addProduct', (req, res) => {
+    res.render('addProduct');
+});
+
+app.post('/addProduct', (req, res) => {
+    const { name, quantity, price, image } = req.body;
+    const sql = 'INSERT INTO products (productName, quantity, price, image) VALUES (?, ?, ?, ?)';
+
+    connection.query(sql, [name, quantity, price, image], (error, results) => {
+        if (error) {
+            console.error("Error adding product:", error);
+            res.send('Error adding product');
+        } else {
+        res.redirect('/');
+        } // Redirect to the home page after adding the product
+    });
+});
+
+const PORT = process.env.PORT || 3000; 
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
