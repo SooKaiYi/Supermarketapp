@@ -28,20 +28,25 @@
     <div class="text-center"><h2>Products from Supermarket App Database</h2></div>
     <br>
   
-    <table class="table table-hover small text-center">
+    <table class="table table-hover table-bordered align-middle text-center">
       <thead>
           <tr>
-            <th width="100">Product Name</th>
-            <th width="100">Product Image</th>
-            <th width="50">Quantity</th>
-            <th width="50">Price</th>
+            <th>Product Name</th>
+            <th>Image</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Edit</th>
+            <th>Delete</th>
           </tr>
       </thead>
       <tbody>
         <% for(let i=0; i < products.length; i++) { %>
           <tr>
             <td><a href="/product/<%= products[i].productId %>" ><%= products[i].productName %></a></td>
-            <td><img src="<%= products[i].image %>" width="20%"></td>
+            <td><img src="/images/<%= products[i].image %>"
+                width="80"
+                height="80"
+                style="object-fit:cover;"></td>
             <td><%= products[i].quantity %></td>
             <td>$<%= products[i].price.toFixed(2) %></td>
             <!-- Edit Link -->

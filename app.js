@@ -1,6 +1,18 @@
 const express = require('express'); 
 const mysql = require('mysql2'); 
+const multer = require('multer');
 const app = express(); 
+
+// Set up multer for file uploads
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+      cb(null, 'public/images'); // Directory to save uploaded files
+  },
+  filename: function(req, file, cb) {
+      cb(null, file.originalname); 
+  }
+});
+const upload = multer({ storage: storage })
  
 // Create MySQL connection 
 const connection = mysql.createConnection({ 
@@ -24,6 +36,8 @@ app.set('view engine', 'ejs');
 app.use(express.static('public'));
 // enable form processing
 app.use(express.urlencoded({ extended: false }));
+// enable static files
+app.use(express.static('public'));
  
 // Define routes 
 
@@ -59,8 +73,14 @@ app.get('/addProduct', (req, res) => {
     res.render('addProduct');
 });
 
-app.post('/addProduct', (req, res) => {
-    const { name, quantity, price, image } = req.body;
+app.post('/addProduct', upload.single('image'), (req, res) => {
+    const { name, quantity, price } = req.body;
+    let image;
+    if (req.file) {
+        image = req.file.filename; // Save only the filename
+    } else {
+        image = null;
+    }
     const sql = 'INSERT INTO products (productName, quantity, price, image) VALUES (?, ?, ?, ?)';
 
     connection.query(sql, [name, quantity, price, image], (error, results) => {
